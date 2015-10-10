@@ -1,2 +1,3 @@
 # timer
-Pure bash script for benchmarking binaries
+
+Pure bash timing script for benchmarking binaries. 
