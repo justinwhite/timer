@@ -1,0 +1,50 @@
+#!/bin/bash
+
+BINARIES=()
+NUM_ITS=3
+
+while [ "$1" != "" ]; do
+    case $1 in
+        --nits )        shift
+                        NUM_ITS=$1
+                        ;;
+        * )             BINARIES+=($1)
+                        ;;
+    esac
+    shift
+done
+
+
+#function timer
+#{
+#    python -m timeit -n 1 "import subprocess; subprocess.call($1)" \
+#    | grep "loops, best of" | grep -o '[0-9]*\.[0-9]'
+#}
+
+#function timer
+#{
+#    for i in $(seq 3)
+#    do
+#        /usr/bin/time --format='%e' $1 2>&1 | grep '^[0-9]*\.[0-9]*$'
+#    done | awk '{total+=$1; count+=1} END {print total/count}'
+#}
+
+function timer
+{
+    for i in $(seq $NUM_ITS)
+    do
+        str=`(time $1) 2>&1 | grep real`
+
+        min=$(echo $str | grep -o '[0-9]*m' | grep -o '[0-9]*')
+        sec=$(echo $str | grep -o '[0-9]*\.' | grep -o '[0-9]*')
+        dec=$(echo $str | grep -o '\.[0-9]*s' | grep -o '[0-9]*')
+
+        echo $min $sec $dec | awk '{print ($1 * 60) + $2 + ($3/1000)}'
+    done | awk '{ sum+=$1; n++ } END { if (n>0) print sum/n }'
+}
+
+for bin in "${BINARIES[@]}"
+do
+    runtime=$(timer $bin)
+    echo "Average over $NUM_ITS runs: $runtime"
+done
